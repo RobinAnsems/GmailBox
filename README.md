@@ -3,30 +3,31 @@ In this manual I will show you how I created the code for the 'GmailBox'. GmailB
 
 ![1](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/1.png)
 
-We are going to connect your Gmail with Zapier and Adafruit IO. When you get an Email, Zapier will send data to Adafruit IO. Your Arduino will pull data from Adafruit IO so you can simulate an Email comming in.
+With Zapier we are going to connect your Gmail with Adafruit IO. When you get an Email, Zapier will send data to Adafruit IO. Your Arduino will pull data from Adafruit IO so you can simulate an Email coming in.
+
 We will make the following things in Arduino:
 * The flag that GmailBox will pull up when you get an Email. We will do this with a servomotor. 
 * The notification-sound. We will do this with a piezo buzzer. 
 * Ledstrip from the GmailBox. We will do this with a NeoPixel.
-* To mark your Email as 'read', we will use a HRC-SR04 Ultrasound motion-sensor.
+* To mark your Email as 'read', we will use a HRC-SR04 Ultrasound distance-sensor.
 
 ## Prerequisites
-### Libaries
-For the GmailBox we are going to use the following libaries:
-* A config file
-* ESP8266WiFi Library
-* ESP8266HTTPClient Library
-* Adafruit NeoPixel Library
-* Servo Library
-(I will show you how to use these libraries in our Adruino-code)
+### Hardware
+For the GmailBox-code we are going to use the following hardware:
+* An ESP8266
+* An Adafruit NeoPixel
+* An Ultrasonic Sensor HC-SR04
+* A Piezo Buzzer
+* A SG90 Mini Analog servomotor
 
 ### Libaries
-For the GmailBox we are going to use the following libaries:
+For the GmailBox-code e are going to use the following libaries:
 * A config file
 * ESP8266WiFi Library
 * ESP8266HTTPClient Library
 * Adafruit NeoPixel Library
 * Servo Library
+
 (I will show you how to use these libraries in our Adruino-code)
 
 ### Accounts
@@ -39,6 +40,91 @@ Register for a Adafruit IO account
 
 ## Manual
 ### Setup Zapier to connect Gmail with Adafruit IO
+When you are logged in on Zapier, click on the button called "Make a Zap!" as shown below:
+
+![2](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/2.png)
+
+The first step is to name your zap on the topleft, I called my zap "GmailBox". When you have done this, choose Gmail as the "App & Event" as shown below:
+
+![3](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/3.png)
+
+For your "Trigger Event", scroll down in the dropdownmenu en choose choose "New Email". Click on Continue.
+
+The next step is to choose your Gmail-account as shown below. When you have done that, click on Continue.
+
+![4](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/4.png)
+
+At "Customize Email" choose the inbox that you want, this can also be a labeled-inbox, I chose for "INBOX" so I get a notification in GmailBox everytime I get an Email, as shown below. Click on Continue.
+
+![5](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/5.png)
+
+At "Find Data" click the button called "Test & Review" It will show you test-emails, choose "Email A" as shown below. Click on "Done Editing".
+
+![6](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/6.png)
+
+The Next step is to connect our Gmail-signal with Adafruit IO. First we need to do some things in Adafruit IO, then we will come back to Zapier.
+
+When you are logged in on Adafruit IO, click on the tab called "Feeds" at the top, as shown below:
+ 
+![7](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/7.png)
+
+When you are there, you click on the dropdownbutton called "Actions" and click on "Create a New Feed" as shown below:
+
+![8](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/8.png)
+
+In the popup-menu fill under "Name" this in: "gmailbox", lowercase, as shown below. This will be your feed-key! Click on "Create".
+
+![9](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/9.png)
+
+Thats it for Adafruit IO.
+
+We will move back to Zapier to complete the steps.
+
+Click on "2. Do This ..." and in the searchbar, search for Adafruit IO as shown below.
+
+![10](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/10.png)
+
+For "Choose Action Event" click the dropdownmenu and choose "Create Feed Data" and click on Continue.
+
+Choose your Adafruit IO account as shown below and click on Continue.
+
+![11](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/11.png)
+
+At "Customize Feed Data" for "Feed Key" click on the dropdownmenu and choose "Custom Value" as shown below.
+
+![12](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/12.png)
+
+For "Custom Value for Feed Key" fill in your feed-key you created at Adafruit IO a few steps back. For "Value" fill in: "1". It should look shomething like this:
+
+![13](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/13.png)
+
+Click on Continue. Press the button called "Test & Continue"
+
+You just created your first Zap! Congrats! Turn on your Zap as shown below:
+
+![14](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/14.png)
+
+Now we are going to code the GmailBox in Arduino.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 First we need to create a cluster. On mongoDB you can have 1 cluster for free.
 Create your first cluster.
 ![Setup 0](https://github.com/smuldesign/BikeBoxApi/blob/master/readme-images/MongoDB-Setup-0.png)
