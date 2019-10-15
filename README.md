@@ -105,181 +105,274 @@ You just created your first Zap! Congrats! Turn on your Zap as shown below:
 ![14](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/14.png)
 
 Now we are going to code the GmailBox in Arduino.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-First we need to create a cluster. On mongoDB you can have 1 cluster for free.
-Create your first cluster.
-![Setup 0](https://github.com/smuldesign/BikeBoxApi/blob/master/readme-images/MongoDB-Setup-0.png)
-
-Select your data plan. (I will choose for the free one)
-![Setup 1](https://github.com/smuldesign/BikeBoxApi/blob/master/readme-images/MongoDB-Setup-1.png)
-
-Select the country where your database will be hosted and choose a name for your database.
-![Setup 2](https://github.com/smuldesign/BikeBoxApi/blob/master/readme-images/MongoDB-Setup-2.png)
-
-Wait a few minutes to let them create your 'Cluster'.
-![Setup 3](https://github.com/smuldesign/BikeBoxApi/blob/master/readme-images/MongoDB-Setup-3.png)
-
-Congratulations! You have created your first database using MongoDB
 ***
 
-### Create your nodeJS project
-If you dont have NodeJS installed on your computer make sure to follow the following steps on:
-[NodeJS - Setup](https://www.webucator.com/how-to/how-install-nodejs-on-mac.cfm)
+### Write code for GmailBox in Arduino
+First you need to create a new Arduino file. When you have done that you need create a config file in the same folder as your Arduino file. You should have something like this (a config file inside the projectfolder, next to the Arduino-file you are going to work on):
 
-#### Initial 
-Open the terminal and navigate to your project map. Run the following code to create a nodeJS project
-```
-Npm run init
-```
-This will give you a few questions to setup your project. Try to answer them and press enter to finish the setup
+![15](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/15.png)
 
-Create a file named 'server.js' and edit the 'main' in package.json to server.js
-```json
-"main": "server.js",
+Now we need to link these two files together, in your Arduino-file, above the setup, paste this code:
+
+```
+#include "config.h"                                 // include the config file where your Adafruit username, key and your WIFI settings will be at
+
+#include <ESP8266WiFi.h>                            // include the ESP8266 WIFI library
+#include <ESP8266HTTPClient.h>                      // include the ESP8266 HTTP Client library                    
 ```
 
-Before we can go further we need to install some libaries. We can do this by typing 'npm install libarieName'.
-We are going to use the following:
-```
-npm install express --save
-npm install mongodb --save
-npm install mongoose --save
-npm install body-parser --save
-```
+Remove every code that is in your config-file and paste the following code:
 
-#### Form to database
-First we are going to create a webpage where we can edit the values in the database.
-Create a file named index.html with the following code.
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Form to MongoDB</title>
-</head>
+```
+/************************ Adafruit IO Config *******************************/
 
-<body>
-<h1>Form to MongoDB</h1>
-<form method="post" action="/addname">
-    <label>Enter Your Name</label><br>
-    <input type="text" name="firstName" placeholder="Enter first name..." required >
-    <input type="text" name="lastName" placeholder="Enter last name..." required >
-    <input type="submit" value="Add Name">
-</form>
-</body>
-</html>
+#define IO_USERNAME  "YOUR ADAFRUIT IO USERNAME HERE"
+#define IO_KEY       "YOUR ADAFRUIT IO KEY HERE"
+
+/******************************* WIFI **************************************/
+
+#define WIFI_SSID   "YOUR WIFI NAME HERE"
+#define WIFI_PASS   "YOUR WIFI PASSWORD HERE"
+
+#include "AdafruitIO_WiFi.h"
 ```
 
-In server js we are going to set the path to this file with express using the following code.
-```javascript
-const express = require("express");
-const app = express();
-const port = 3000;
+You have to fill in your WIFI name and password to connect to the internet.
+You also have to fill in your username and key, which kan be found when you click the yellow "AIO Key"-button in Adafruit IO as shown below:
 
-app.use("/", (req, res) => {
-    res.sendFile(__dirname + "/index.html");
-});
+![16](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/16.png)
 
-app.listen(port, () => {
-    console.log("Server listening on port " + port);
-});
+
+#### Connect Arduino with Adafruit IO
+
+The next step is to connect your Arduino with Adafruit IO. Above the setup you have to paste this code to setup the feedkey for Adafruit IO:
+
 ```
-You can test if this is working by going to the terminal and typing in:
-```
-node server.js
-```
-This will run the server and show it on localhost:3000
-
-Next up we will setup the files to send it to the database.
-
-Follow the first steps.
-![Setup 1](https://github.com/smuldesign/BikeBoxApi/blob/master/readme-images/mongodb-step-1.png)
-
-For this we will need to connection url which you can find under the connect button.
-![Setup 1](https://github.com/smuldesign/BikeBoxApi/blob/master/readme-images/connect-url-0.png)
-Then copy the link and add your credentials under username and password
-![Setup 1](https://github.com/smuldesign/BikeBoxApi/blob/master/readme-images/connect-url-1.png)
-
-Now we need to add to following code below: Port = 3000;
-This will create the schema which mongodb will use to create the database.
-Add the username and password of the database user you created in step 1 form the mongodb setup.
-```javascript
-const mongoose = require("mongoose");
-mongoose.Promise = global.Promise;
-mongoose.connect("mongodb+srv://<user>:<password>@bikeboxapi-l7jii.mongodb.net/test?retryWrites=true&w=majority");
-
-var nameSchema = new mongoose.Schema({
-    firstName: String,
-    lastName: String
-});
-
-var User = mongoose.model("User", nameSchema);
+AdafruitIO_Feed *gmailbox = io.feed("gmailbox");    // setup the feedkey for Adafruit IO                  
 ```
 
-Next up we are gonna add the body parser to read the form.
-You can do this by adding the following code;
-```javascript
-const bodyParser = require('body-parser');
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+Now we get to the "void setup". Paste this code in the setup:
+
+```
+void setup() {
+  Serial.begin(115200);                             // start the serial connection
+
+  while(! Serial);                                  // wait for serial monitor to open
+
+  Serial.print("Connecting to Adafruit IO");        // connect to io.adafruit.com
+  io.connect();
+
+  // set up a message handler for the 'gmailbox' feed.
+  // the handleMessage function (defined below)
+  // will be called whenever a message is
+  // received from adafruit io.
+
+  while(io.status() < AIO_CONNECTED) {              // wait for a connection
+    Serial.print(".");                              // serial print dots
+    delay(500);                                     // half a second between serial print
+  }
+
+  // message for when we are connected to Adafruit IO
+  Serial.println();                                
+  Serial.println(io.statusText());
+  gmailbox->get();
+
+  gmailbox->onMessage(handleMessage);               // if an Email comes in 'handeMessage' will be run
+}
 ```
 
-We are almost done with adding the form to the database. We now need to listen to a post command on the server. This piece of code will make sure your data gets proccessed and saved to the database.
-```javascript
-app.post("/addname", (req, res) => {
-    let myData = new User(req.body);
-    myData.save()
-        .then(item => {
-            res.send("item saved to database");
-        })
-        .catch(err => {
-            res.status(400).send("unable to save to database");
-        });
-});
+Now we get to the "void loop". Paste this code in de loop:
+
+```
+void loop() {
+  io.run();                                         // search Adafruit IO for signals of an Email
+}
 ```
 
-Now you can test the form.
-start the server and submit a name.
-If everything is done well you can see the name on mongodb.com under collections button.
+Now if you upload your code, you should see if you Arduino can connect to Adafruit IO. You can see this in the Serial Monitor.
 
-#### How do we get this data to a json?
-For this I will use the latest post of the User database. 
-```javascript
-app.get("/url", (req, res, next) => {
-    User.find({}, {}, { sort: { date: -1 } }, function(err, post) {
-        res.json(post[post.length - 1]);
-    });
-});
-```
-To test if the latest submit is being show go to the url; localhost:3000/url
-We got a working form to json server. Whenever you want to change the way this form looks you have to make to edit the :
-```javascript
-var nameSchema = new mongoose.Schema({
-    firstName: String,
-    lastName: String
-});
-```
-as well.
+If you have succesfully connected with Adafruit IO we can write code for when we get an Email, we will doe this with a servomotor to simulate the flag going up on the GmailBox.
 
-For the full code clone the repository
+#### Flag from GmailBox simulated with a servomotor
+
+For the servomotor we need to add a library above the setup. Paste this code above your setup:
+
+```
+#include <Servo.h>                                  // include the Servo library
+Servo myServo;                                      // make a servoObject with the name 'myServo'
+```
+
+To define the servo we have to put some code in the setup, I put the servo in D6 on my ESP8266. In your setup paste this code:
+
+```
+  myServo.attach(D6);                               // define the pin for the servomotor
+  myServo.write(0);                                 // set the servomotor to zero degrees
+```
+
+We are going to make a new 'void' named: "void handleMessage". It should look something like this below. If we get an Email, the servo is going to be 90 degrees (flag up). If the value (Adafruit IO value) is bigger than 1 (1 Email), the flag will go up!
+
+```
+void handleMessage(AdafruitIO_Data *data) {         // if an Email comes in 'handeMessage' will be run
+if (data > 0){                                       // if the value is bigger than zero in Adafruit IO
+  myServo.write(90);                                // set the servomotor to 90 degrees 
+  delay(1000);                                      // a second between actions because the servomotor is not that fast
+  Serial.println("flag up");                        // serial print "flag up"
+ }
+  else {                                            // else the value is still 0 in Adafruit IO 
+    myServo.write(0);                               // set the servomotor to zero degrees 
+    delay(1000);                                    // a second delay
+    Serial.println("no mail");                      // serial print "no mail"
+  }
+} 
+```
+
+Now if you upload your code and you send yourself an Email, your servomotor should rotate 90 degrees.
+
+#### Mark the Email as 'read' with a gesture
+
+We are going to use the distance-sensor for the gesture. When you are closer than 10 centimeters with your hand away from the sensor (GmailBox) our flag has to go down, because we 'read' the Email. Let's get started.
+
+For the distance-sensor you need to define the trigger- and echopin above the setup:
+
+```
+#define trigPin D1                                  // define the trigger pin for the distance-sensor
+#define echoPin D2                                  // define the echo pin for the distance-sensor
+```
+
+To define the distance-sensor we have to put some code in the setup. In your setup paste this code:
+
+```
+  pinMode(trigPin, OUTPUT);                         // define the trigger pin as output
+  pinMode(echoPin, INPUT);                          // define the echo pin as input
+```
+
+In your loop you need to paste the following distance-sensor-code to get the sensor working:
+
+```
+  long duration, distance;                          // make a variable for duration and distance
+  digitalWrite(trigPin, LOW);                       // give no pulse to the motionsensor 
+  delayMicroseconds(2);                             // time between pulses
+  digitalWrite(trigPin, HIGH);                      // give a pulse to the motionsensor
+  delayMicroseconds(10);                            // time between pulses
+  digitalWrite(trigPin, LOW);                       // give no pulse to the motionsensor
+  duration = pulseIn(echoPin, HIGH);                // setup the duration
+  distance = (duration/2) / 29.1;                   // setup the distance
+  Serial.print(distance);                           // serial print the distance in the serial monitor
+  Serial.println(" cm");                            // serial print the distance in centimeters
+  delay(500);                                       // half a second between serial print
+```
+
+If the distance is smaller than 10 centimeters the servo has to be 0 degrees (flag down). In your loop paste the following code:
+
+```
+if (distance <= 10) {                               // if the distance to the motionsensor is smaller then 10 centimeters
+  myServo.write(0);                                 // set the servomotor to zero degrees 
+  }
+```
+
+You can now mark the Email as 'read' with a gesture (your hand in front of the distance-sensor), the servomotor will go to zero degrees (flag down) if your hand is in 10 centimeters from the sensor.
+
+#### Add a ledstrip (NeoPixel)
+
+The Adafruit IO NeoPixel uses a library. I put the pin from the NeoPixel in D3 and I have a NeoPixel with 30 leds, change these values to your NeoPixel if needed. Above to setup you need to paste this code to get the NeoPixel working:
+
+```
+#include <Adafruit_NeoPixel.h>                      // include the Adafruit NeoPixel library
+#define PIXEL_PIN     D3                            // define the pin for your NeoPixel
+#define PIXEL_COUNT   30                            // define the number of leds in your NeoPixel
+#define PIXEL_TYPE    NEO_GRB + NEO_KHZ800          // define the type of your NeoPixel
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);     // make a variable with the name 'pixels' 
+```
+ 
+In the setup we are going to paste code which turns on the NeoPixel:
+
+```
+  pixels.begin();                                   // start your NeoPixel
+  pixels.show();                                    // shows your NeoPixel
+```
+
+If we put our hand before the distance-sensor, we want the NeoPixel to turn off, we do this bij putting the code below, under the if statement in the loop which sets the servo to zero degrees when the distance is smaller then 10 centimeters. 
+
+```
+  for( int i = 0; i<PIXEL_COUNT; i++){              // for loop that turns off every led in the NeoPixel
+    pixels.setPixelColor(i, 0, 0, 0);               // pixelcolor set to zero, lights off
+    pixels.show();                                  // shows your NeoPixel
+    }
+```
+
+It should look something like this:
+
+```
+if (distance <= 10) {                               // if the distance to the motionsensor is smaller then 10 centimeters
+  myServo.write(0);                                 // set the servomotor to zero degrees 
+   
+  for( int i = 0; i<PIXEL_COUNT; i++){              // for loop that turns off every led in the NeoPixel
+    pixels.setPixelColor(i, 0, 0, 0);               // pixelcolor set to zero, lights off
+    pixels.show();                                  // shows your NeoPixel
+    }
+  }
+```
+
+But when there is an Email, we want the NeoPixel to turn on, we do this bij putting the code below, under the if statement in the 'void handleMessage'.
+
+```
+for( int i = 0; i<PIXEL_COUNT; i++){              // for loop that turns off every led in the NeoPixel 
+    pixels.setPixelColor(i, 213, 70, 56);           // pixelcolor set to the Gmail-color
+    pixels.show();                                  // shows your NeoPixel
+    }
+```
+
+It should look something like this:
+
+```
+ if (data > 0){                                     // if the value is bigger than zero in Adafruit IO
+  myServo.write(90);                                // set the servomotor to 90 degrees 
+  delay(1000);                                      // a second between actions because the servomotor is not that fast
+  Serial.println("flag up");                        // serial print "flag up"
+
+  for( int i = 0; i<PIXEL_COUNT; i++){              // for loop that turns off every led in the NeoPixel 
+    pixels.setPixelColor(i, 213, 70, 56);           // pixelcolor set to the Gmail-color
+    pixels.show();                                  // shows your NeoPixel
+    }
+ }
+```
+
+Now if you get an Email, your NeoPixel should light up, and when you put you hand in front of the distance-sensor, the NeoPixel should turn off.
+
+#### Add a notification-sound (Piezo Buzzer)
+
+To add a sound when we get an Email, we have to put the code below under the if statement in the 'void handleMessage'. I put my pin in D8.
+
+```
+  tone(D8, 200, 200);                               // notification-sound in the format (pin, toneheight, tonelength)
+  delay(500);                                       // half a second between tones
+  tone(D8, 300, 500);                               // notification-sound in the format (pin, toneheight, tonelength)
+  delay(1000);                                      // a second delay
+```
+
+It should look something like this:
+
+```
+ if (data > 0){                                     // if the value is bigger than zero in Adafruit IO
+  myServo.write(90);                                // set the servomotor to 90 degrees 
+  delay(1000);                                      // a second between actions because the servomotor is not that fast
+  Serial.println("flag up");                        // serial print "flag up"
+
+  for( int i = 0; i<PIXEL_COUNT; i++){              // for loop that turns off every led in the NeoPixel 
+    pixels.setPixelColor(i, 213, 70, 56);           // pixelcolor set to the Gmail-color
+    pixels.show();                                  // shows your NeoPixel
+    }
+
+  tone(D8, 200, 200);                               // notification-sound in the format (pin, toneheight, tonelength)
+  delay(500);                                       // half a second between tones
+  tone(D8, 300, 500);                               // notification-sound in the format (pin, toneheight, tonelength)
+  delay(1000);                                      // a second delay
+
+ }
+```
+Thats it! You have created the code for 'GmailBox'.
+
+To review the full code, clone the repository or download the zip-file.
 
 ## Author
-* **Rico Zethof** - [Rico Zethof](https://github.com/rico1136)
+* **Robin Ansems** - [Robin Ansems](https://github.com/RobinAnsems)
