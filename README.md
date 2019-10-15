@@ -21,7 +21,7 @@ For the GmailBox-code we are going to use the following hardware:
 * A SG90 Mini Analog servomotor
 
 ### Libaries
-For the GmailBox-code e are going to use the following libaries:
+For the GmailBox-code we are going to use the following libaries:
 * A config file
 * ESP8266WiFi Library
 * ESP8266HTTPClient Library
@@ -138,7 +138,7 @@ Remove every code that is in your config-file and paste the following code:
 ```
 
 You have to fill in your WIFI name and password to connect to the internet.
-You also have to fill in your username and key, which kan be found when you click the yellow "AIO Key"-button in Adafruit IO as shown below:
+You also have to fill in your username and key, which can be found when you click the yellow "AIO Key"-button in Adafruit IO as shown below:
 
 ![16](https://github.com/RobinAnsems/GmailBox/blob/master/readme-images/16.png)
 
@@ -189,9 +189,9 @@ void loop() {
 }
 ```
 
-Now if you upload your code, you should see if you Arduino can connect to Adafruit IO. You can see this in the Serial Monitor.
+Now if you upload your code, you should see if your Arduino can connect to Adafruit IO. You can see this in the Serial Monitor.
 
-If you have succesfully connected with Adafruit IO we can write code for when we get an Email, we will doe this with a servomotor to simulate the flag going up on the GmailBox.
+If you have succesfully connected with Adafruit IO we can write code for when we get an Email, we will do this with a servomotor to simulate the flag going up on the GmailBox.
 
 #### Flag from GmailBox simulated with a servomotor
 
@@ -274,7 +274,7 @@ You can now mark the Email as 'read' with a gesture (your hand in front of the d
 
 #### Add a ledstrip (NeoPixel)
 
-The Adafruit IO NeoPixel uses a library. I put the pin from the NeoPixel in D3 and I have a NeoPixel with 30 leds, change these values to your NeoPixel if needed. Above to setup you need to paste this code to get the NeoPixel working:
+The Adafruit IO NeoPixel uses a library. I put the pin from the NeoPixel in D3 and I have a NeoPixel with 30 leds, change these values to your NeoPixel if needed. Above the setup you need to paste this code to get the NeoPixel working:
 
 ```
 #include <Adafruit_NeoPixel.h>                      // include the Adafruit NeoPixel library
